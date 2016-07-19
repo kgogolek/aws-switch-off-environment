@@ -13,7 +13,7 @@
     name: "{{ item.0.set.value.split('.')[0] }}"
     state: absent
     region: "{{ environment_region }}"
-    cache_port: {{ item.1.port }}
+    cache_port: "{{ item.1.port }}"
     wait: no
   with_together:
     - elasticache_servers.results

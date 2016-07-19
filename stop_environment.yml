@@ -18,6 +18,8 @@
 
 - name: Stop all instances matching a certain tag
   hosts: tag_{{ environment_tag }}_{{ env }}
+  vars_files:
+      - vars/default.yml
   connection: local
   roles:
     -  role: stop_servers
