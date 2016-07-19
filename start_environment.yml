@@ -21,7 +21,7 @@
   hosts: localhost
   connection: local
   vars_files:
-    - ../vars_files/environment/{{env}}.yml
+    - vars/default.yml
   tasks:
     - action: ec2_facts
     - ec2_asg:
