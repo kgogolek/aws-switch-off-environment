@@ -1,0 +1,36 @@
+---
+- name: Start Elasticache instances
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/default.yml
+  roles:
+    - role: start_elasticache
+
+- name: Start all instances matching a certain tag
+  hosts: tag_{{ environment_tag }}_{{ env }}
+  serial: 1
+  vars_files:
+    - vars/default.yml
+  connection: local
+  roles:
+    - start_servers
+
+
+- name: Scale up instances in autoscaling groups for raven
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ../vars_files/environment/{{env}}.yml
+  tasks:
+    - action: ec2_facts
+    - ec2_asg:
+        name: "{{ item.name }}"
+        min_size: "0"
+        max_size: "{{ item.max }}"
+        desired_capacity: "{{ item.desired }}"
+        region: "{{ environment_region }}"
+        wait_for_instances: no
+      with_items: environment_asgs
+
+

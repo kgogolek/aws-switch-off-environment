@@ -1,0 +1,18 @@
+---
+- name: Start device
+  ec2:
+    instance_ids: "{{ ec2_id }}"
+    state: running
+    wait: yes
+    region: "{{ environment_region }}"
+
+# ELBs sometimes don't like instances that were stopped, and require them to be removed and added, below does that:
+- name: "Environment: {{env}} | Instance De-register from ELB"
+  ec2_elb:
+    instance_id: "{{ ec2_id }}"
+    state: 'absent'
+    region: "{{ environment_region }}"
+
+- name: "Environment: {{env}} | Instance Register"
+  command: aws elb register-instances-with-load-balancer --load-balancer-name "{{ item }}" --instances {{ ec2_id }} --region {{ environment_region }}
+  with_items: ec2_elbs

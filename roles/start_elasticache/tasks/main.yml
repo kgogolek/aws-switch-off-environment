@@ -1,0 +1,34 @@
+---
+- name: Starting elasticache servers for each of the Elasticache types
+  elasticache:
+    name: "{{ item.cluster_id }}"
+    state: present
+    num_nodes: "{{ item.num_nodes }}"
+    engine: "{{ item.engine }}"
+    cache_engine_version: "{{ item.engine_ver }}"
+    node_type: "{{ item.instance_type }}"
+    cache_subnet_group: "{{ item.subnet }}"
+    cache_port: "{{ item.port }}"
+    wait: yes
+    region: "{{ environment_region }}"
+  retries: 10
+  delay: 2
+  with_items: environment_cache_servers
+  register: cache_instances
+  until: cache_instances|success
+
+- name: Swap route53 domain
+  route53:
+    command: create
+    zone: "{{ environment_base_domain }}"
+    record: "{{ item.1.domain }}"
+    overwrite: yes
+    type: CNAME
+    ttl: 60
+    value: "{{ item.0.elasticache.data.CacheNodes[0].Endpoint.Address }}"
+  until: result_of_run|success
+  retries: 10
+  delay: 2
+  with_together:
+    - cache_instances.results
+    - environment_cache_servers

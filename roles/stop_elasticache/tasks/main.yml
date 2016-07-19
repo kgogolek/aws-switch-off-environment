@@ -1,0 +1,20 @@
+---
+- name: Find endpoints for all the elasticache servers
+  route53:
+      command: get
+      zone: "{{ environment_base_domain }}"
+      record: "{{ item.domain }}"
+      type: CNAME
+  register: elasticache_servers
+  with_items: environment_cache_servers
+
+- name: "Delete elasticache servers"
+  elasticache:
+    name: "{{ item.0.set.value.split('.')[0] }}"
+    state: absent
+    region: "{{ environment_region }}"
+    cache_port: {{ item.1.port }}
+    wait: no
+  with_together:
+    - elasticache_servers.results
+    - environment_cache_servers

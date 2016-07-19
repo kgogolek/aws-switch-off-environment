@@ -1,0 +1,14 @@
+# Base domain for Route53
+environment_base_domain: test.com
+# AWS region you will run this script in
+environment_region: eu-west-1
+# AWS Tag Key assigned to the Instance that will hold environment value
+environment_tag: Environment
+
+# list the cache servers you want to start, and add correct subnets
+environment_cache_servers:
+  - { cluster_id: "{{ env }}-memcached", num_nodes: 1, engine: memcached, engine_ver: 1.4.5, instance_type: cache.t2.micro, port: 11211, subnet: default, domain: "memcached.{{ environment_base_domain }}" }
+  - { cluster_id: "{{ env }}-redis", num_nodes: 1, engine: redis, engine_ver: 2.6.13, instance_type: cache.t2.micro, port: 6379, subnet: default, domain: "redis.{{ environment_base_domain }}" }
+
+environment_asg_groups:
+  - { name: "{{ env }}-Example-ASG", max: 2, desired: 2 }

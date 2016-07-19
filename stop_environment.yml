@@ -1,0 +1,31 @@
+# Stop the instances with the following tag
+# This will run on cron in the evening for certain environments
+---
+- name: Scale down instances in autoscaling groups for raven
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/default.yml
+  tasks:
+    - action: ec2_facts
+    - ec2_asg:
+        name: "{{ item.name }}"
+        min_size: 0
+        max_size: 0
+        desired_capacity: 0
+        region: "{{ environment_region }}"
+      with_items: environment_asgs
+
+- name: Stop all instances matching a certain tag
+  hosts: tag_{{ environment_tag }}_{{ env }}
+  connection: local
+  roles:
+    -  role: stop_servers
+
+- name: Stop elasticache servers
+  hosts: localhost
+  vars_files:
+    - vars/default.yml
+  connection: local
+  roles:
+    - stop_elasticache

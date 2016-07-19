@@ -1,0 +1,8 @@
+# Stop the instances with the following tag
+# This will run on cron in the evening for certain environments
+---
+- name: Stop device
+  ec2:
+    instance_ids: "{{ ec2_id }}"
+    region: "{{ environment_region }}"
+    state: stopped
